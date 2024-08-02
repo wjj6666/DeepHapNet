@@ -7,8 +7,6 @@ from torch.utils.data import Dataset
 from torch.nn import functional as F
 import torch
 
-
-
 # get the ACGT statistics of a read matrix
 def ACGT_count(submatrix):
 	"""
@@ -84,19 +82,6 @@ def HM_distance(read: np.ndarray,
 
     return sum((haplo - read)[read != 0] != 0)
 
-"""
-if __name__ == "__main__":
-    # 创建示例的读取和单倍型数组
-    read = np.array([1, 2, 3, 4, 0])
-    haplo = np.array([1, 3, 4, 4, 0])
-
-    # 调用函数计算汉明距离
-    distance = HM_distance(read, haplo)
-
-    # 打印结果
-    print("汉明距离:", distance)
-"""
-
 
 def MEC(SNV_matrix: np.ndarray,
         hap_matrix: np.ndarray) -> int:  # Compute MEC score
@@ -123,95 +108,21 @@ def MEC(SNV_matrix: np.ndarray,
         
     return res
 
-"""
-if __name__ == "__main__":
-    # 创建示例的读取-SNP矩阵和单倍型-SNP矩阵
-    SNV_matrix = np.array([
-        [1, 2, 3, 4, 0],
-        [2, 3, 4, 1, 0],
-        [1, 1, 2, 3, 0],
-        [4, 3, 2, 1, 0],
-        [1, 2, 2, 3, 0]
-    ])
-    hap_matrix = np.array([
-        [1, 2, 3, 4, 0],
-        [2, 1, 3, 4, 0],
-        [1, 3, 3, 4, 0],
-        [4, 2, 2, 3, 0]
-    ])
-
-    # 调用函数计算MEC分数
-    mec_score = MEC(SNV_matrix, hap_matrix)
-
-    # 打印结果
-    print("MEC分数:", mec_score)
-"""
-
-
-# evaluate the correct phasing rate
-def CPR(recovered_haplo: np.ndarray, true_haplo: np.ndarray) -> float:
-	# """
-	# recovered_haplo:
-	# 	k x n matrix of recovered haplotypes
-	# true_haplo:
-	# 	True haplotypes (ground truth)
-
-	# Returns
-	# 	correct phasing rate
-	# """
-
-    if np.shape(recovered_haplo) != np.shape(true_haplo):
-        raise ValueError("Input arguments should have the same shape.")
-    
-    distance_table = np.zeros((len(recovered_haplo), len(true_haplo)))
-    for i, rec_hap in enumerate(recovered_haplo):
-        for j, true_hap in enumerate(true_haplo):
-            distance_table[i, j] = HM_distance(rec_hap, true_hap)
-
-    # print("Distance table")
-    # print(distance_table)
-
-    index = permutations(range(true_haplo.shape[0]))
-    min_distance = np.inf 
-    distance = []
-    for matching in index:
-        count = 0
-        for i, match_idx in enumerate(matching):
-            count += distance_table[i, match_idx]
-        distance.append(count)
-        if count < min_distance:
-            best_matching = matching
-            min_distance = count
-	# index = (list(index))[np.argmin(np.array(distance))]  # Best one-to-one mapping
-	# print(best_matching)
-    cpr = 1 - min(distance) / np.size(true_haplo)
-
-    return cpr
-
-
 
 
 def read_true_hap(gt_file: str, pos_file: str) -> np.ndarray:
     try:
-        # 读取 SNP 位置文件，获取 SNP 位置信息
         with open(pos_file, "r") as pos_f:
             pos_str = pos_f.readline().split()
-            pos = np.array([int(ps) - 1 for ps in pos_str])  # 将位置转换为从0开始索引
+            pos = np.array([int(ps) - 1 for ps in pos_str]) 
 
-        # 读取真实基因组文件，获取 SNP 数据
         with open(gt_file, "r") as gt_f:
-            # 逐行读取文件内容
             lines = gt_f.readlines()
-            # 过滤掉标题行
             data_lines = [line.strip() for line in lines if not line.startswith(">")]
-            # 初始化存储 SNP 数据的数组
             true_hap = np.zeros((len(data_lines), len(pos)), dtype=int)
-            # 遍历每个基因组
             for i, line in enumerate(data_lines):
-                # 遍历 SNP 位置，提取对应的碱基信息
                 for j, p in enumerate(pos):
                     base = line[p]
-                    # 将碱基信息转换为对应的整数
                     if base == 'A':
                         true_hap[i, j] = 1
                     elif base == 'C':
@@ -223,19 +134,10 @@ def read_true_hap(gt_file: str, pos_file: str) -> np.ndarray:
                     elif base == '-':
                         true_hap[i, j] = 0
                     else:
-                        true_hap[i, j] = -1  # 未知情况，可以根据需求修改
+                        true_hap[i, j] = -1 
         return true_hap
     except FileNotFoundError as e:
         raise OSError(f"File not found: {e.filename}")
-
-"""
-# 测试函数
-gt_file = "/home/wangjiaojiao/XHap-master/A/gt_file.txt"
-pos_file = "/home/wangjiaojiao/XHap-master/A/SNV_pos.txt"
-haplotypes = read_true_hap(gt_file, pos_file)
-print(haplotypes)
-"""
-
 
 
 def read_hap(hap_file: str) -> np.ndarray:
@@ -440,8 +342,6 @@ def SWER(recovered_haplo: np.ndarray,
     return res
 
 
-
-# 保存模型的状态和优化器的状态到一个文件。
 def save_ckp(state, checkpoint_path):  
     """
     state: checkpoint we want to save
@@ -450,7 +350,6 @@ def save_ckp(state, checkpoint_path):
     f_path = checkpoint_path  # Save path
     torch.save(state, f_path)
 
-# 从文件加载模型的状态和优化器的状态。
 def load_ckp(checkpoint_path, model, optimizer):
     """
     checkpoint_path: path to save checkpoint
@@ -467,15 +366,12 @@ def load_ckp(checkpoint_path, model, optimizer):
     return model, optimizer, checkpoint['epoch']
 
 
-
-# 从文本文件加载SNV矩阵，并提供对这些数据的访问
 class SNVMatrixDataset(Dataset):
     def __init__(self, SNV_file, transform=None):
         """
         SNV_file: txt file containing SNV matrix
         """
         SNV_matrix_raw = np.loadtxt(SNV_file, dtype=int)
-        # 对原始SNV矩阵进行过滤，仅保留那些非零元素个数大于1的行。这通常用于移除缺失数据较多的记录。
         self.SNV_matrix = SNV_matrix_raw[np.sum(SNV_matrix_raw != 0, axis=1) > 1]
 	 
     def __len__(self):
@@ -483,47 +379,30 @@ class SNVMatrixDataset(Dataset):
     
     def __getitem__(self, idx):
         SNV_row = torch.from_numpy(self.SNV_matrix[idx])
-        # 将SNV行转换为one-hot编码。由于SNV数据以整数形式编码，这里假设存在5种可能的值（包括0作为缺失数据）。[:,1:]的操作去掉了第一列，即去掉了表示缺失数据的one-hot编码列，只保留有效的碱基编码。
         SNV_row_onehot = F.one_hot(SNV_row, 5)[:,1:]
-        # 将one-hot编码的数据类型转换为float32，这通常是深度学习模型期望的数据类型。
         SNV_row_onehot = SNV_row_onehot.type(torch.float32)
-        # 将one-hot编码的张量进行转置，使得其形状符合模型的输入要求。
         SNV_row_onehot = SNV_row_onehot.transpose(1,0)
-        # 返回处理后的SNV行（已经转换为one-hot编码并转置）和当前行的索引。这里SNV_row_onehot[None,:]增加了一个新的批次维度，以便与PyTorch的其他数据处理工具兼容。
         return SNV_row_onehot[None,:], idx  # Shape is batch x 4 x numSNP
 
-
-
 # Dataset class to use if SNV matrix is stored in sparse format
-# 以稀疏矩阵格式处理SNV数据，提供对这些数据的访问
 class SparseSNVMatrixDataset(Dataset):
     def __init__(self, SNV_matrix, transform=None):
         """
         SNV_file: Sparse/dense read-SNP matrix
         """
-        
         self.SNV_matrix = csr_matrix(SNV_matrix)
 	 
-
     def __len__(self):
         return self.SNV_matrix.get_shape()[0]
     
     def __getitem__(self, idx):
-        # 从稀疏SNV矩阵中获取索引为idx的行（getrow(idx)），然后将这一行转换为密集格式（todense()），最后转换为PyTorch张量。这里的[0]是因为todense()方法返回的是一个矩阵，而[0]将其转换为一维数组。
         SNV_row = torch.from_numpy(self.SNV_matrix.getrow(idx).todense())[0]
-        # 将SNV_row转换为one-hot编码。这里假设存在5种可能的值（包括表示缺失数据的0）。[:,1:]操作去掉了表示缺失数据的第一列，只保留了有效的碱基编码。
         SNV_row_onehot = F.one_hot(SNV_row, 5)[:,1:]
-
-        # 将one-hot编码的数据类型转换为float32，这是深度学习模型期望的数据类型。
         SNV_row_onehot = SNV_row_onehot.type(torch.float32)
-
-        # 转置one-hot编码的张量，使得其形状符合模型的输入要求。
         SNV_row_onehot = SNV_row_onehot.transpose(1,0)
-
-        # 返回处理后的SNV行（已转换为one-hot编码并转置）和当前行的索引。这里SNV_row_onehot[None,:]增加了一个新的批次维度，以便与PyTorch的其他数据处理工具兼容。
         return SNV_row_onehot[None,:], idx  # Shape is batch x 4 x numSNP
 
-# 将SNV矩阵分割成多个块，每个块可以有一定的重叠部分
+
 def chunk_data(datapath, chunk_size=1000, overlap_frac=0.5):
     """
     Chunk read-SNP matrix into blocks of size chunk_size shifted by 
@@ -546,17 +425,17 @@ def chunk_data(datapath, chunk_size=1000, overlap_frac=0.5):
                 idx_val_dict[(nReads, int(snv))] = int(val)
             nReads = nReads + 1
     
-    SNV_matrix = coo_matrix((vals, (rows, cols)), shape=(nReads, nSNV)).tocsc()   # 使用coo_matrix函数（稀疏矩阵的一种格式）将这些值转换成一个压缩列稀疏矩阵（CSC格式），其中nReads和nSNV分别表示矩阵的行数和列数。
-    chunk_overlap = int(chunk_size*overlap_frac)  # Number of SNPs to overlap between blocks,计算块之间的重叠SNPs数（chunk_overlap）
+    SNV_matrix = coo_matrix((vals, (rows, cols)), shape=(nReads, nSNV)).tocsc()   
+    chunk_overlap = int(chunk_size*overlap_frac)  
     
     print("Chunking matrix")
     chunked_data = []
-    for i in range(0, nSNV, chunk_size - chunk_overlap):   # 以chunk_size - chunk_overlap为步长遍历SNP索引
+    for i in range(0, nSNV, chunk_size - chunk_overlap):   
         chunk = SNV_matrix[:,i:i+chunk_size].tocsr()
 		# print(i, i+chunk_size, chunk.shape)
         chunk_rows = chunk.sum(axis=1).nonzero()[0]
 		# print(chunk[chunk_rows, :].get_shape())
-        chunked_data.append((i, SparseSNVMatrixDataset(chunk[chunk_rows, :])))   # 将每个块及其起始SNP索引作为元组添加到chunked_data列表中
+        chunked_data.append((i, SparseSNVMatrixDataset(chunk[chunk_rows, :])))   
     print("Finished chunking matrix into %d chunks" %len(chunked_data))
 
     return chunked_data
