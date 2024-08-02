@@ -35,10 +35,10 @@ Run **main_real.py** :
 Run **mian_semi.py** ：
 
     # using simulated short-reads dataset
-    python main_semi.py -f 3_soltub_10x -r /home/wangjiaojiao/XHap-master/deephap/data/short_ref/solanum_tuberosum.fa -p 3 -c 10 -n 5 -a 5 -g 3 
+    python main_semi.py -f 3_soltub_10x -r /deephap/data/short_ref/solanum_tuberosum.fa -p 3 -c 10 -n 5 -a 5 -g 3 
     
     # using simulated long-reads dataset
-    python main_semi.py -f 3_human_80x -r /home/wangjiaojiao/XHap-master/deephap/data/long_ref/human_sample.fa -p 3 -c 80 -n 5 -a 5 -g 3 --long
+    python main_semi.py -f 3_human_80x -r /deephap/data/long_ref/human_sample.fa -p 3 -c 80 -n 5 -a 5 -g 3 --long
 
 Run **mian_semi.py** ：
 
