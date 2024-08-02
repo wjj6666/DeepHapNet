@@ -41,16 +41,6 @@ def train_deephap(SNVdata: SparseSNVMatrixDataset,
                   alpha: float=0.1
                ):
 
-    """
-    # set device
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
-    if torch.cuda.is_available():
-        device = torch.device(f'cuda:{gpu}')
-        print('The code uses GPU....')
-    else:
-        device = torch.device('cpu')
-        print('The code uses CPU....')
-    """
     if gpu >= 0:
         if torch.cuda.is_available():
             device = torch.device("cuda:" + str(gpu))
