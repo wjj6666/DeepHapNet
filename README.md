@@ -3,7 +3,7 @@
 ## About
 DeepHap is a comprehensive framework for learning similarities between reads based on Retentive Network (RETNET), which is the infrastructure for a large-scale language model, and then clustering reads through a deep clustering architecture, eventually accomplishing the task of assembling diploid or polyploid haplotypes.
 
-The current implementation of XHap uses Python3, PyTorch and PyTorch ROCm (for AMD GPUs). Both CPU and GPU implementations are available in _xhap.py_ and _xhap_parallel.py_ respectively.
+The current implementation of DeepHap uses Python3, PyTorch. 
 
 ## Dependencies
 - PyTorch >= 1.10
