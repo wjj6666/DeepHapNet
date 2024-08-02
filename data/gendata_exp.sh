@@ -50,6 +50,6 @@ $EXTRACT_MATRIX -f $REF -s "$HAPFOLDER/$OUTHEAD.sam" -t $THRESH -z "$HAPFOLDER/$
 echo "SNP matrix generated.........................."
 
 
-/home/wangjiaojiao/miniconda3/envs/xhap/bin/python snp2vcf.py -r $REF -p "$HAPFOLDER/$OUTHEAD""_SNV_pos.txt" -m "$HAPFOLDER/$OUTHEAD""_SNV_matrix.txt" -o "$HAPFOLDER/$OUTHEAD""_variants.vcf"
+python snp2vcf.py -r $REF -p "$HAPFOLDER/$OUTHEAD""_SNV_pos.txt" -m "$HAPFOLDER/$OUTHEAD""_SNV_matrix.txt" -o "$HAPFOLDER/$OUTHEAD""_variants.vcf"
 echo "VCF file created.........................."
 
