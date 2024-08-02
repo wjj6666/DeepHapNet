@@ -6,6 +6,7 @@
 - [ART](https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm)   
 - [PBSIM2](https://github.com/yukiteruono/pbsim2)   
 - BWA-MEM
+- HapCUT2
 
 #### 1.2 Semi-experimental data generation comprises the following steps:
 - Generating haplotypes from selected reference genome using _haplotypegenerator.py_ from **HaploSim**.
