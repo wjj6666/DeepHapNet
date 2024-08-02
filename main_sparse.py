@@ -229,7 +229,6 @@ if __name__ == '__main__':
 
             print('Chunk starts')
             print('MEC: ', MEC(SNV_matrix[:, pos:pos+hap_chunk.shape[1]].toarray(), hap_chunk))  
-            # print('CPR: ', compute_cpr(hap_chunk, true_hap[:, pos:pos+hap_chunk.shape[1]]))
 
             if pos == 0:
                 hap_matrix[:, :hap_chunk.shape[1]] = hap_chunk
