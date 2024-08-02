@@ -1,4 +1,4 @@
-# XHap: Haplotype assembly sing long-distance read correlations learned by transformers
+# DeepHap: 
 
 ## About
 DeepHap is a comprehensive framework for learning similarities between reads based on Retentive Network (RETNET), which is the infrastructure for a large-scale language model, and then clustering reads through a deep clustering architecture, eventually accomplishing the task of assembling diploid or polyploid haplotypes.
