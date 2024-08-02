@@ -53,9 +53,9 @@ fi
 
 # Generate haplotypes
 if [[ $MODEL == "poisson" ]];then
-  /home/wangjiaojiao/miniconda3/envs/code/bin/python $HAPGEN -f $REF -o $OUTHEAD --model $MODEL -s "[0.04,0.01,0.01]" -m "{'A':'GCT','G':'ACT','C':'TAG','T':'ACG'}" -p $HAPNUM
+  python2 $HAPGEN -f $REF -o $OUTHEAD --model $MODEL -s "[0.04,0.01,0.01]" -m "{'A':'GCT','G':'ACT','C':'TAG','T':'ACG'}" -p $HAPNUM
 elif [[ $MODEL == "lognormal" ]];then
- /home/wangjiaojiao/miniconda3/envs/code/bin/python $HAPGEN -f $REF -o $OUTHEAD --model $MODEL -s "[6.07,0,0]" --sdlog "[1.293,0,0]" -m "{'A':'GCT','G':'ACT','C':'TAG','T':'ACG'}" -p $HAPNUM
+ python2 $HAPGEN -f $REF -o $OUTHEAD --model $MODEL -s "[6.07,0,0]" --sdlog "[1.293,0,0]" -m "{'A':'GCT','G':'ACT','C':'TAG','T':'ACG'}" -p $HAPNUM
   # python2 $HAPGEN -f $REF -o $OUTHEAD --model $MODEL -s "[3.03,0,0]" --sdlog "[1.293,0,0]" -m "{'A':'GCT','G':'ACT','C':'TAG','T':'ACG'}" -p $HAPNUM
 else
   echo "Invalid model specified"
@@ -78,9 +78,9 @@ cat "$HAPFOLDER/"*".fa" > "$HAPFOLDER/combined.fa"  # Combined FASTA files
 
 # Add indels to one of the genomes
 if [ $INS -gt 0 ]; then
-  /home/wangjiaojiao/miniconda3/envs/xhap/bin/python add_indel.py -f "$HAPFOLDER/combined.fa" -i $INS -t "$HAPFOLDER/indel.txt"
+  python3 add_indel.py -f "$HAPFOLDER/combined.fa" -i $INS -t "$HAPFOLDER/indel.txt"
 elif [ $DEL -gt 0 ]; then
-  /home/wangjiaojiao/miniconda3/envs/xhap/bin/python add_indel.py -f "$HAPFOLDER/combined.fa" -d $DEL -t "$HAPFOLDER/indel.txt"
+  python3 add_indel.py -f "$HAPFOLDER/combined.fa" -d $DEL -t "$HAPFOLDER/indel.txt"
 fi
 
 # Generate long reads using PBSIM2
