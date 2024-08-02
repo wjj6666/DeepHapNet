@@ -29,7 +29,7 @@
 #### 2.1 The Bash script **gendata_exp.bash** can be used to process real potato data (stored in the `SolTub` folder).
 Run **gendata_exp.bash** example：
 
-    ./gendata_exp.sh -f /deephap/data/SolTub/region_reference/region_1.fasta -o soltub_region1 -n 4
+    ./gendata_exp.sh -f /your_path/data/SolTub/region_reference/region_1.fasta -o soltub_region1 -n 4
     
 #### 2.2 Included reference genomes
 - **solanum_tuberosum.fa:** 10 kbp sample of Solanum Tuberosum Chromosome 5 genome (used for semi-experimental data generation),stored in the `short_ref` folder.
