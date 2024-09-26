@@ -30,7 +30,7 @@ from spectralnet._cluster import SpectralNet
 from retnet.retnet import RetNet
 
 
-def train_rshap(SNVdata: SparseSNVMatrixDataset, 
+def train_deephapnet(SNVdata: SparseSNVMatrixDataset, 
                   gpu: int=-1, 
                   hidden_dim: int = 128, 
                   num_hap: int = 2,
@@ -161,7 +161,7 @@ def parser():
     parser.add_argument("-f", "--filehead", help="Prefix of required files",type=str, required=True)
     parser.add_argument("-p", "--ploidy", help="Ploidy of organism",default=2, type=int)
     parser.add_argument("-a", "--algo_runs", help="Number of experimental runs per dataset",default=1, type=int)
-    parser.add_argument("-g", "--gpu", help='Number of GPUs to run RSHap',default=0, type=int)
+    parser.add_argument("-g", "--gpu", help='Number of GPUs to run DeepHapNet',default=0, type=int)
     args = parser.parse_args()
     print(args)
     return args
@@ -173,7 +173,7 @@ if __name__ == '__main__':
 
     gt_file = 'data/NA12878/' + args.filehead + '/' +  args.filehead+ '_true_haplotypes.txt'
     datapath = 'data/NA12878/' + args.filehead + '/' +  args.filehead + '_SNV_matrix.txt'
-    savepath = 'data/NA12878/' + args.filehead + '/' +  args.filehead + '_rshap_hap_matrix.npz'
+    savepath = 'data/NA12878/' + args.filehead + '/' +  args.filehead + '_deephapnet_hap_matrix.npz'
 
     SNV_matrix = read_sparseSNVMatrix(datapath)
     if os.path.exists(savepath):
@@ -181,12 +181,12 @@ if __name__ == '__main__':
     else:
         hap_matrix = np.zeros((args.ploidy, SNV_matrix.shape[1]), dtype=int)
 
-    def train_rshap_map(spos, SNVdata, gpu=args.gpu, num_runs=args.algo_runs):      
+    def train_deephapnet_map(spos, SNVdata, gpu=args.gpu, num_runs=args.algo_runs):      
         mec_min = np.inf             
         hap_matrix_best = np.zeros((args.ploidy, chunk_size), dtype=int)     
         for r in range(num_runs):    
 
-            hap_matrix_run, mec_run = train_rshap(SNVdata, 
+            hap_matrix_run, mec_run = train_deephapnet(SNVdata, 
                                                     gpu=gpu,
                                                     hidden_dim=128,
                                                     num_hap=args.ploidy, 
@@ -211,9 +211,9 @@ if __name__ == '__main__':
 
     for d in range(0, len(SNV_matrix_list), args.gpu):
         chunk_starts, chunk_SNVdata = zip(*SNV_matrix_list[d:d + args.gpu]) 
-        print('Running RSHap on chunks starting at: ', chunk_starts)
-        res_d = pool.starmap(train_rshap_map, zip(chunk_starts, chunk_SNVdata, gpu_list))      
-        print('Finished running RSHap on chunks starting at: ', chunk_starts)
+        print('Running DeepHapNet on chunks starting at: ', chunk_starts)
+        res_d = pool.starmap(train_deephapnet_map, zip(chunk_starts, chunk_SNVdata, gpu_list))      
+        print('Finished running DeepHapNet on chunks starting at: ', chunk_starts)
         # Stitch haplotype chunks together
         pos_list, hap_chunk_list = zip(*res_d)      
         for pos, hap_chunk in zip(pos_list, hap_chunk_list):
@@ -232,19 +232,18 @@ if __name__ == '__main__':
                 recon_end = pos + hap_chunk.shape[1]
         print('Status so far')
         print('MEC: ', MEC(SNV_matrix[:, :recon_end].toarray(), hap_matrix[:, :recon_end]))
-
     np.savez(savepath, hap = hap_matrix)   
     print('Finished in %d seconds.' %(time.time()-start_time))
 
     SNV_matrix = SNV_matrix.toarray()
-    rshap_res = np.load(savepath)
-    rshap_hap = rshap_res['hap']
+    deephapnet_res = np.load(savepath)
+    deephapnet_hap = deephapnet_res['hap']
     true_hap = read_hap(gt_file)
 
-    mec_rshap = MEC(SNV_matrix, rshap_hap)
-    swer_rshap = SWER(rshap_hap, true_hap)
-    nblocks = np.sum(np.sum(rshap_hap != 0, axis=0) == 0) + 1
+    mec_deephapnet = MEC(SNV_matrix, deephapnet_hap)
+    swer_deephapnet = SWER(deephapnet_hap, true_hap)
+    nblocks = np.sum(np.sum(deephapnet_hap != 0, axis=0) == 0) + 1
 
-    print("The MEC for RSHap: ",mec_rshap)
-    print("The SWER for RSHap: ",swer_rshap)
-    print("The number of blocks for RSHap: ",nblocks)
+    print("The MEC for DeepHapNet: ",mec_deephapnet)
+    print("The SWER for DeepHapNet: ",swer_deephapnet)
+    print("The number of blocks for DeepHapNet: ",nblocks)
