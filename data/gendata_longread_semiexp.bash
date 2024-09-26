@@ -56,8 +56,7 @@ if [[ $MODEL == "poisson" ]];then
   python2 $HAPGEN -f $REF -o $OUTHEAD --model $MODEL -s "[0.04,0.01,0.01]" -m "{'A':'GCT','G':'ACT','C':'TAG','T':'ACG'}" -p $HAPNUM
 elif [[ $MODEL == "lognormal" ]];then
  python2 $HAPGEN -f $REF -o $OUTHEAD --model $MODEL -s "[6.07,0,0]" --sdlog "[1.293,0,0]" -m "{'A':'GCT','G':'ACT','C':'TAG','T':'ACG'}" -p $HAPNUM
-  # python2 $HAPGEN -f $REF -o $OUTHEAD --model $MODEL -s "[3.03,0,0]" --sdlog "[1.293,0,0]" -m "{'A':'GCT','G':'ACT','C':'TAG','T':'ACG'}" -p $HAPNUM
-else
+
   echo "Invalid model specified"
   exit 1
 fi
