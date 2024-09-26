@@ -30,7 +30,7 @@ from spectralnet._cluster import SpectralNet
 from retnet.retnet import RetNet
 
 
-def train_deephap(SNVdata: SparseSNVMatrixDataset, 
+def train_rshap(SNVdata: SparseSNVMatrixDataset, 
                   gpu: int=-1, 
                   hidden_dim: int = 128, 
                   num_hap: int = 2,
@@ -51,11 +51,14 @@ def train_deephap(SNVdata: SparseSNVMatrixDataset,
         device = torch.device("cpu")
     print('DEVICE: ', device)    
 
+
+        
     # load data
     SNV_matrix = SNVdata.SNV_matrix.todense()
     print('SNP matrix: ', SNV_matrix.shape)
     batch_size = int(np.ceil(len(SNVdata)/5))
     dataloader = DataLoader(SNVdata, batch_size=batch_size, shuffle=True, num_workers=0)    
+    
 
     # Initial read embedding encoder
     savefile="read_AE"
@@ -158,7 +161,7 @@ def parser():
     parser.add_argument("-f", "--filehead", help="Prefix of required files",type=str, required=True)
     parser.add_argument("-p", "--ploidy", help="Ploidy of organism",default=2, type=int)
     parser.add_argument("-a", "--algo_runs", help="Number of experimental runs per dataset",default=1, type=int)
-    parser.add_argument("-g", "--gpu", help='Number of GPUs to run deephap',default=0, type=int)
+    parser.add_argument("-g", "--gpu", help='Number of GPUs to run RSHap',default=0, type=int)
     args = parser.parse_args()
     print(args)
     return args
@@ -170,7 +173,7 @@ if __name__ == '__main__':
 
     gt_file = 'data/NA12878/' + args.filehead + '/' +  args.filehead+ '_true_haplotypes.txt'
     datapath = 'data/NA12878/' + args.filehead + '/' +  args.filehead + '_SNV_matrix.txt'
-    savepath = 'data/NA12878/' + args.filehead + '/' +  args.filehead + '_deephap_hap_matrix.npz'
+    savepath = 'data/NA12878/' + args.filehead + '/' +  args.filehead + '_rshap_hap_matrix.npz'
 
     SNV_matrix = read_sparseSNVMatrix(datapath)
     if os.path.exists(savepath):
@@ -178,12 +181,12 @@ if __name__ == '__main__':
     else:
         hap_matrix = np.zeros((args.ploidy, SNV_matrix.shape[1]), dtype=int)
 
-    def train_deephap_map(spos, SNVdata, gpu=args.gpu, num_runs=args.algo_runs):      
+    def train_rshap_map(spos, SNVdata, gpu=args.gpu, num_runs=args.algo_runs):      
         mec_min = np.inf             
         hap_matrix_best = np.zeros((args.ploidy, chunk_size), dtype=int)     
         for r in range(num_runs):    
 
-            hap_matrix_run, mec_run = train_deephap(SNVdata, 
+            hap_matrix_run, mec_run = train_rshap(SNVdata, 
                                                     gpu=gpu,
                                                     hidden_dim=128,
                                                     num_hap=args.ploidy, 
@@ -193,6 +196,7 @@ if __name__ == '__main__':
                   hap_matrix_best = hap_matrix_run
         return spos, hap_matrix_best         
     
+
     SNV_matrix_list = chunk_data(datapath, chunk_size=chunk_size, overlap_frac=overlap_frac)          
     #gpu_list = range(0, 6, 1) 
     gpu_list = [3,4,5]      
@@ -207,9 +211,9 @@ if __name__ == '__main__':
 
     for d in range(0, len(SNV_matrix_list), args.gpu):
         chunk_starts, chunk_SNVdata = zip(*SNV_matrix_list[d:d + args.gpu]) 
-        print('Running deephap on chunks starting at: ', chunk_starts)
-        res_d = pool.starmap(train_deephap_map, zip(chunk_starts, chunk_SNVdata, gpu_list))      
-        print('Finished running deephap on chunks starting at: ', chunk_starts)
+        print('Running RSHap on chunks starting at: ', chunk_starts)
+        res_d = pool.starmap(train_rshap_map, zip(chunk_starts, chunk_SNVdata, gpu_list))      
+        print('Finished running RSHap on chunks starting at: ', chunk_starts)
         # Stitch haplotype chunks together
         pos_list, hap_chunk_list = zip(*res_d)      
         for pos, hap_chunk in zip(pos_list, hap_chunk_list):
@@ -226,22 +230,21 @@ if __name__ == '__main__':
                 match = best_match(rec_hap, hap_chunk[:, :recon_end - pos])
                 hap_matrix[:, pos:pos + hap_chunk.shape[1]] = hap_chunk[match,:]
                 recon_end = pos + hap_chunk.shape[1]
-
         print('Status so far')
         print('MEC: ', MEC(SNV_matrix[:, :recon_end].toarray(), hap_matrix[:, :recon_end]))
 
     np.savez(savepath, hap = hap_matrix)   
     print('Finished in %d seconds.' %(time.time()-start_time))
-    
-    SNV_matrix = SNV_matrix.toarray()
-    deephap_res = np.load(savepath)
-    deephap_hap = deephap_res['hap']
-    true_hap = read_hap(gt_file)
-	
-    mec_deephap = MEC(SNV_matrix, deephap_hap)
-    swer_deephap = SWER(deephap_hap, true_hap)
-    nblocks = np.sum(np.sum(deephap_hap != 0, axis=0) == 0) + 1
 
-    print("The MEC for DeepHap: ",mec_deephap)
-    print("The SWER for DeepHap: ",swer_deephap)
-    print("The number of blocks for DeepHap: ",nblocks)
+    SNV_matrix = SNV_matrix.toarray()
+    rshap_res = np.load(savepath)
+    rshap_hap = rshap_res['hap']
+    true_hap = read_hap(gt_file)
+
+    mec_rshap = MEC(SNV_matrix, rshap_hap)
+    swer_rshap = SWER(rshap_hap, true_hap)
+    nblocks = np.sum(np.sum(rshap_hap != 0, axis=0) == 0) + 1
+
+    print("The MEC for RSHap: ",mec_rshap)
+    print("The SWER for RSHap: ",swer_rshap)
+    print("The number of blocks for RSHap: ",nblocks)
