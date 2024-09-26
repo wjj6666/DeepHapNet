@@ -134,7 +134,7 @@ def RetNet_loss(retnet_output: torch.Tensor,
     return Loss
 
 
-def train_deephap(outhead: str, 
+def train_rshap(outhead: str, 
                   hidden_dim: int = 128, 
                   num_hap: int = 2, 
                   num_epoch: int = 2000, 
@@ -178,7 +178,7 @@ def train_deephap(outhead: str,
     W_over, W_mask, W_dynamic = (x.to(device) for x in caculate_parameters(SNV_matrix))
 
     MSE = nn.MSELoss()
-    retnet_savefile = 'data/' + outhead + '/deephap_ckp'
+    retnet_savefile = 'data/' + outhead + '/rshap_ckp'
     retnet_optimizer = optim.AdamW(list(retnet.parameters()) + list(embedAE.parameters()),lr=learning_rate)
 
     for epoch in range(num_epoch):
@@ -222,15 +222,15 @@ def train_deephap(outhead: str,
             hap_origin_best = 1*hap_origin
             hap_matrix_best = 1*hap_matrix
             print('Epoch = %d, MEC = %d' %(epoch, mec_curr))
-            deephap_best = {'embed_ae': embedAE.state_dict(),'retnet': retnet.state_dict()}
-            torch.save(deephap_best, 'data/' + outhead + '/deephap_model')
+            rshap_best = {'embed_ae': embedAE.state_dict(),'retnet': retnet.state_dict()}
+            torch.save(rshap_best, 'data/' + outhead + '/rshap_model')
         
     hap_origin_best = hap_origin_best.cpu().numpy()
     print("The MEC before refine: ",mec_min)
     mec_best, hap_matrix_best,  hap_origin_best = optimise(SNV_matrix, hap_origin_best, num_hap)
     print("------------------------------")
     print("The MEC after refine: ",mec_best)
-    np.savez('data/' + outhead + '/haptest_retnet_res', rec_hap=hap_matrix_best, rec_hap_origin=hap_origin_best)
+    np.savez('data/' + outhead + '/rshap', rec_hap=hap_matrix_best, rec_hap_origin=hap_origin_best)
     #print('Best MEC = %d' % mec_best)
     return mec_best
 
@@ -239,7 +239,7 @@ def parser():
     parser.add_argument("-f", "--filehead", help="Prefix of required files", type=str, required=True)
     parser.add_argument("-p", "--ploidy", help="Ploidy of organism", default=2, type=int)
     parser.add_argument("-a", "--algo_runs", help="Number of experimental runs per dataset", default=1, type=int)
-    parser.add_argument("-g", "--gpu", help='GPU to run deephap', default=-1, type=int)
+    parser.add_argument("-g", "--gpu", help='GPU to run RSHap', default=-1, type=int)
     args = parser.parse_args()
     print(args)
     return args
@@ -251,12 +251,12 @@ if __name__ == '__main__':
     best_mec = float('inf')
     for r in range(args.algo_runs):
         print('RUN %d for %s' % (r+1, fhead))
-        mec_r = train_deephap(fhead, num_epoch=2000, gpu=args.gpu, num_hap=args.ploidy)
+        mec_r = train_rshap(fhead, num_epoch=2000, gpu=args.gpu, num_hap=args.ploidy)
         if mec_r < best_mec:
             best_mec = mec_r
-            shutil.copy('data/' + fhead + '/haptest_retnet_res.npz', 'data/' + fhead + '/haptest_retnet_res_best.npz')                
+            shutil.copy('data/' + fhead + '/rshap.npz', 'data/' + fhead + '/rshap_best.npz')                
         mec.append(mec_r)
 
-    print('MEC scores for Deephap: ', mec)
+    print('MEC scores for RSHap: ', mec)
     print('Best MEC: %d' % mec[np.argmin(mec)])
 
