@@ -168,8 +168,10 @@ if __name__ == '__main__':
     chunk_size = 250 
     overlap_frac = 0.2 
 
+    gt_file = 'data/NA12878/' + args.filehead + '/' +  args.filehead+ '_true_haplotypes.txt'
     datapath = 'data/NA12878/' + args.filehead + '/' +  args.filehead + '_SNV_matrix.txt'
     savepath = 'data/NA12878/' + args.filehead + '/' +  args.filehead + '_deephap_hap_matrix.npz'
+
     SNV_matrix = read_sparseSNVMatrix(datapath)
     if os.path.exists(savepath):
         hap_matrix = np.load(savepath)['hap']
@@ -191,7 +193,6 @@ if __name__ == '__main__':
                   hap_matrix_best = hap_matrix_run
         return spos, hap_matrix_best         
     
-
     SNV_matrix_list = chunk_data(datapath, chunk_size=chunk_size, overlap_frac=overlap_frac)          
     #gpu_list = range(0, 6, 1) 
     gpu_list = [3,4,5]      
@@ -225,9 +226,22 @@ if __name__ == '__main__':
                 match = best_match(rec_hap, hap_chunk[:, :recon_end - pos])
                 hap_matrix[:, pos:pos + hap_chunk.shape[1]] = hap_chunk[match,:]
                 recon_end = pos + hap_chunk.shape[1]
+
         print('Status so far')
         print('MEC: ', MEC(SNV_matrix[:, :recon_end].toarray(), hap_matrix[:, :recon_end]))
 
-np.savez(savepath, hap = hap_matrix)   
-print('Finished in %d seconds.' %(time.time()-start_time))
+    np.savez(savepath, hap = hap_matrix)   
+    print('Finished in %d seconds.' %(time.time()-start_time))
+    
+    SNV_matrix = SNV_matrix.toarray()
+    deephap_res = np.load(savepath)
+    deephap_hap = deephap_res['hap']
+    true_hap = read_hap(gt_file)
+	
+    mec_deephap = MEC(SNV_matrix, deephap_hap)
+    swer_deephap = SWER(deephap_hap, true_hap)
+    nblocks = np.sum(np.sum(deephap_hap != 0, axis=0) == 0) + 1
 
+    print("The MEC for DeepHap: ",mec_deephap)
+    print("The SWER for DeepHap: ",swer_deephap)
+    print("The number of blocks for DeepHap: ",nblocks)
