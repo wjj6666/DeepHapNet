@@ -226,7 +226,7 @@ def train_rshap(outhead: str,
             torch.save(rshap_best, 'data/' + outhead + '/rshap_model')
         
     hap_origin_best = hap_origin_best.cpu().numpy()
-    print("The MEC before refine: ",mec_min)
+    #print("The MEC before refine: ",mec_min)
     mec_best, hap_matrix_best,  hap_origin_best = optimise(SNV_matrix, hap_origin_best, num_hap)
     print("------------------------------")
     print("The MEC after refine: ",mec_best)
