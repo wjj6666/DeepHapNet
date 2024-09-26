@@ -51,14 +51,11 @@ def train_deephap(SNVdata: SparseSNVMatrixDataset,
         device = torch.device("cpu")
     print('DEVICE: ', device)    
 
-
-        
     # load data
     SNV_matrix = SNVdata.SNV_matrix.todense()
     print('SNP matrix: ', SNV_matrix.shape)
     batch_size = int(np.ceil(len(SNVdata)/5))
     dataloader = DataLoader(SNVdata, batch_size=batch_size, shuffle=True, num_workers=0)    
-    
 
     # Initial read embedding encoder
     savefile="read_AE"
@@ -228,12 +225,8 @@ if __name__ == '__main__':
                 match = best_match(rec_hap, hap_chunk[:, :recon_end - pos])
                 hap_matrix[:, pos:pos + hap_chunk.shape[1]] = hap_chunk[match,:]
                 recon_end = pos + hap_chunk.shape[1]
-                # print('MATCH: ', match)
-
         print('Status so far')
-
         print('MEC: ', MEC(SNV_matrix[:, :recon_end].toarray(), hap_matrix[:, :recon_end]))
-        # print('CPR: ', compute_cpr(hap_matrix[:, :recon_end], true_hap[:, :recon_end]))
 
 np.savez(savepath, hap = hap_matrix)   
 print('Finished in %d seconds.' %(time.time()-start_time))
