@@ -3,7 +3,7 @@ import subprocess
 import os
 import shutil
 import argparse
-from main_real import train_rshap
+from main_real import train_deephapnet
 
 def parser():
     parser = argparse.ArgumentParser()
@@ -13,7 +13,7 @@ def parser():
     parser.add_argument("-c", "--cov", help="Coverage",default=10, type=float)
     parser.add_argument("-n", "--num_expt", help="Number of datasets",default=1, type=int)
     parser.add_argument("-a", "--algo_runs", help="Number of experimental runs per dataset",default=1, type=int)
-    parser.add_argument("-g", "--gpu", help='GPU to run RSHap',default=-1, type=int)
+    parser.add_argument("-g", "--gpu", help='GPU to run DeepHapNet',default=-1, type=int)
     parser.add_argument("--long", help="True if using long reads",action='store_true', default=False)
     args = parser.parse_args()
     print(args)
@@ -36,18 +36,18 @@ if __name__ == '__main__':
         mec = []
         best_mec = float('inf')
         for r in range(args.algo_runs):
-            # Train RSHap on generated data
+            # Train DeepHapNet on generated data
             print('RUN %d for %s' %(r+1, fhead))
-            mec_r = train_rshap(fhead,
+            mec_r = train_deephapnet(fhead,
                                   num_epoch=2000,
                                   gpu=args.gpu, 
                                   num_hap=args.ploidy)
             if len(mec) == 0 or mec_r < min(mec):
                 best_mec = mec_r
-                shutil.copy('data/' + fhead + '/rshap.npz', 'data/' + fhead + '/rshap_best.npz')
-                shutil.copy('data/' + fhead + '/rshap_model', 'data/' + fhead + '/rshap_model_best')
+                shutil.copy('data/' + fhead + '/deephapnet.npz', 'data/' + fhead + '/deephapnet_best.npz')
+                shutil.copy('data/' + fhead + '/deephapnet_model', 'data/' + fhead + '/deephapnet_model_best')
             mec.append(mec_r)
-        print('MEC scores for RSHap: ', mec)
+        print('MEC scores for DeepHapNet: ', mec)
         print('Best MEC: %d' % best_mec)
         mec_expt.append(best_mec)
     print('Average MEC: %.3f +/- %.3f' %(np.mean(mec_expt), np.std(mec_expt)))
