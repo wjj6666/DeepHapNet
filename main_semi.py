@@ -13,7 +13,7 @@ def parser():
     parser.add_argument("-c", "--cov", help="Coverage",default=10, type=float)
     parser.add_argument("-n", "--num_expt", help="Number of datasets",default=1, type=int)
     parser.add_argument("-a", "--algo_runs", help="Number of experimental runs per dataset",default=1, type=int)
-    parser.add_argument("-g", "--gpu", help='GPU to run deephap',default=-1, type=int)
+    parser.add_argument("-g", "--gpu", help='GPU to run DeepHapNet',default=-1, type=int)
     parser.add_argument("--long", help="True if using long reads",action='store_true', default=False)
     args = parser.parse_args()
     print(args)
@@ -38,20 +38,20 @@ if __name__ == '__main__':
         mec = []
         swer = []
         for r in range(args.algo_runs):
-            # Train deephap on generated data
+            # Train DeepHapNet on generated data
             print('RUN %d for %s' %(r+1, fhead))
             mec_r,swer_r = train_deephapnet(fhead,
-                                  num_epoch=20,
+                                  num_epoch=2000,
                                   gpu=args.gpu, 
                                   num_hap=args.ploidy,
                                   check_swer=True)
             if len(mec) == 0 or mec_r < min(mec):
-                shutil.copy('data/' + fhead + '/haptest_retnet_res.npz', 'data/' + fhead + '/haptest_retnet_res_best.npz')
-                shutil.copy('data/' + fhead + '/deephap_model', 'data/' + fhead + '/deephap_model_best')
+                shutil.copy('data/' + fhead + '/deephapnet.npz', 'data/' + fhead + '/deephapnet_best.npz')
+                shutil.copy('data/' + fhead + '/deephapnet_model', 'data/' + fhead + '/deephapnet_model_best')
             mec.append(mec_r)
             swer.append(swer_r)
-        print('MEC scores for deephap: ', mec)
-        print('SWER scores for deephap: ', swer)
+        print('MEC scores for DeepHapNet: ', mec)
+        print('SWER scores for DeepHapNet: ', swer)
         
         r_best = np.argmin(mec)
         print('Best MEC: %.3f, Corresponding SWER: %.3f' %(mec[r_best], swer[r_best]))
