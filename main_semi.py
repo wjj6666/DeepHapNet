@@ -13,7 +13,7 @@ def parser():
     parser.add_argument("-c", "--cov", help="Coverage",default=10, type=float)
     parser.add_argument("-n", "--num_expt", help="Number of datasets",default=1, type=int)
     parser.add_argument("-a", "--algo_runs", help="Number of experimental runs per dataset",default=1, type=int)
-    parser.add_argument("-g", "--gpu", help='GPU to run DeepHapNet',default=-1, type=int)
+    parser.add_argument("-g", "--gpu", help='GPU to run deephap',default=-1, type=int)
     parser.add_argument("--long", help="True if using long reads",action='store_true', default=False)
     args = parser.parse_args()
     print(args)
@@ -22,8 +22,10 @@ def parser():
 if __name__ == '__main__':
     args = parser()
     mec_expt = []
+    swer_expt = []
     for i in range(args.num_expt):
-        fhead = args.filehead + "_iter" + str(i+1)  
+        fhead = args.filehead + "_iter" + str(i+1) 
+
         # Generate data
         cov = np.round(args.cov/args.ploidy, 3) 
         os.chdir('data')
@@ -34,20 +36,27 @@ if __name__ == '__main__':
         os.chdir('../')
 
         mec = []
-        best_mec = float('inf')
+        swer = []
         for r in range(args.algo_runs):
-            # Train DeepHapNet on generated data
+            # Train deephap on generated data
             print('RUN %d for %s' %(r+1, fhead))
-            mec_r = train_deephapnet(fhead,
-                                  num_epoch=2000,
+            mec_r,swer_r = train_deephapnet(fhead,
+                                  num_epoch=20,
                                   gpu=args.gpu, 
-                                  num_hap=args.ploidy)
+                                  num_hap=args.ploidy,
+                                  check_swer=True)
             if len(mec) == 0 or mec_r < min(mec):
-                best_mec = mec_r
-                shutil.copy('data/' + fhead + '/deephapnet.npz', 'data/' + fhead + '/deephapnet_best.npz')
-                shutil.copy('data/' + fhead + '/deephapnet_model', 'data/' + fhead + '/deephapnet_model_best')
+                shutil.copy('data/' + fhead + '/haptest_retnet_res.npz', 'data/' + fhead + '/haptest_retnet_res_best.npz')
+                shutil.copy('data/' + fhead + '/deephap_model', 'data/' + fhead + '/deephap_model_best')
             mec.append(mec_r)
-        print('MEC scores for DeepHapNet: ', mec)
-        print('Best MEC: %d' % best_mec)
-        mec_expt.append(best_mec)
+            swer.append(swer_r)
+        print('MEC scores for deephap: ', mec)
+        print('SWER scores for deephap: ', swer)
+        
+        r_best = np.argmin(mec)
+        print('Best MEC: %.3f, Corresponding SWER: %.3f' %(mec[r_best], swer[r_best]))
+        mec_expt.append(mec[r_best])
+        swer_expt.append(swer[r_best])
+
     print('Average MEC: %.3f +/- %.3f' %(np.mean(mec_expt), np.std(mec_expt)))
+    print('Average SWER: %.3f +/- %.3f' %(np.mean(swer_expt), np.std(swer_expt)))
