@@ -10,7 +10,7 @@ from torch import optim
 from torch.utils.data import DataLoader
 from torch.nn import functional as F
 
-from utils import MEC, SNVtoHap, SNVMatrixDataset,save_ckp
+from utils import MEC, SNVtoHap, SNVMatrixDataset,save_ckp,read_true_hap,SWER
 from embeddings import ReadAE, AE_train
 
 from spectralnet._cluster import SpectralNet
@@ -139,6 +139,7 @@ def train_deephapnet(outhead: str,
                   num_hap: int = 2, 
                   num_epoch: int = 2000, 
                   gpu: int=2,
+                  check_swer:bool = False,
                   learning_rate: float=1e-4,
                   beta1: float=1,
                   beta2: float=100,
@@ -153,7 +154,12 @@ def train_deephapnet(outhead: str,
         device = torch.device('cpu')
         print('The code uses CPU....')
 
-    datapath = 'data/' + outhead + '/' + outhead + '_SNV_matrix.txt'  
+    datapath = 'data/' + outhead + '/' + outhead + '_SNV_matrix.txt'
+    gt_file = 'data/' + outhead + '/combined.fa'
+    pos_file = 'data/' + outhead + '/' + outhead + '_SNV_pos.txt'
+    if check_swer:
+        true_haplo = read_true_hap(gt_file, pos_file)  
+
     SNVdata = SNVMatrixDataset(datapath)
     SNV_matrix = np.loadtxt(datapath, dtype=int)
     SNV_matrix = SNV_matrix[np.sum(SNV_matrix != 0, axis=1) > 1] 
@@ -226,13 +232,15 @@ def train_deephapnet(outhead: str,
             torch.save(deephapnet_best, 'data/' + outhead + '/deephapnet_model')
         
     hap_origin_best = hap_origin_best.cpu().numpy()
-    #print("The MEC before refine: ",mec_min)
     mec_best, hap_matrix_best,  hap_origin_best = optimise(SNV_matrix, hap_origin_best, num_hap)
-    #print("------------------------------")
     print("The MEC after refine: ",mec_best)
-    np.savez('data/' + outhead + '/deephapnet', rec_hap=hap_matrix_best, rec_hap_origin=hap_origin_best)
-    #print('Best MEC = %d' % mec_best)
-    return mec_best
+    if check_swer:
+        np.savez('data/' + outhead + '/deephapnet', rec_hap=hap_matrix_best, rec_hap_origin=hap_origin_best, true_hap=true_haplo)
+        swer_best = SWER(hap_matrix_best,true_haplo)
+        return mec_best, swer_best
+    else:
+        np.savez('data/' + outhead + '/deephapnet', rec_hap=hap_matrix_best, rec_hap_origin=hap_origin_best)
+        return mec_best
 
 def parser():
     parser = argparse.ArgumentParser()
@@ -251,7 +259,7 @@ if __name__ == '__main__':
     best_mec = float('inf')
     for r in range(args.algo_runs):
         print('RUN %d for %s' % (r+1, fhead))
-        mec_r = train_deephapnet(fhead, num_epoch=2000, gpu=args.gpu, num_hap=args.ploidy)
+        mec_r = train_deephapnet(fhead, num_epoch=20, gpu=args.gpu, num_hap=args.ploidy)
         if mec_r < best_mec:
             best_mec = mec_r
             shutil.copy('data/' + fhead + '/deephapnet.npz', 'data/' + fhead + '/deephapnet_best.npz')                
