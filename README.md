@@ -6,6 +6,7 @@ DeepHap is a comprehensive framework for learning similarities between reads bas
 The current implementation of DeepHap uses Python3, PyTorch. 
 
 ## Dependencies
+- Python > 3.7
 - PyTorch >= 1.10
 - Numpy
 - C++
