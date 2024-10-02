@@ -11,7 +11,6 @@ The current implementation of DeepHap uses Python3, PyTorch.
 - C++
 - Samtools
 
-Where possible, additional dependencies have been included in the GitHub repository.
 
 ## Assumed directory structure
 The `data` folder stores the data for all experiments, and all DeepHap scripts are in the current directory.
