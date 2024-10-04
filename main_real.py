@@ -259,7 +259,7 @@ if __name__ == '__main__':
     best_mec = float('inf')
     for r in range(args.algo_runs):
         print('RUN %d for %s' % (r+1, fhead))
-        mec_r = train_deephapnet(fhead, num_epoch=20, gpu=args.gpu, num_hap=args.ploidy)
+        mec_r = train_deephapnet(fhead, num_epoch=2000, gpu=args.gpu, num_hap=args.ploidy)
         if mec_r < best_mec:
             best_mec = mec_r
             shutil.copy('data/' + fhead + '/deephapnet.npz', 'data/' + fhead + '/deephapnet_best.npz')                
