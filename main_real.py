@@ -263,20 +263,21 @@ def parser():
     print(args)
     return args
 
-if __name__ == '__main__':
-    args = parser()
-    fhead = args.filehead
-    mec = []
-    best_mec = float('inf')
-    for r in range(args.algo_runs):
-	if args.set_seed:
-	    setting_seed()
-        print('RUN %d for %s' % (r+1, fhead))
-        mec_r = train_deephapnet(fhead, num_epoch=2000, gpu=args.gpu, num_hap=args.ploidy)
-        if mec_r < best_mec:
-            best_mec = mec_r
-            shutil.copy('data/' + fhead + '/deephapnet.npz', 'data/' + fhead + '/deephapnet_best.npz')                
-        mec.append(mec_r)
+if __name__ == '__main__':  
+    args = parser()  
+    fhead = args.filehead  
+    mec = []  
+    best_mec = float('inf')  
+    for r in range(args.algo_runs):  
+        if args.set_seed:  
+            setting_seed()  
+  
+        print('RUN %d for %s' % (r+1, fhead))  
+        mec_r = train_deephapnet(fhead, num_epoch=2000, gpu=args.gpu, num_hap=args.ploidy)  
+        if mec_r < best_mec:  
+            best_mec = mec_r  
+            shutil.copy('data/' + fhead + '/deephapnet.npz', 'data/' + fhead + '/deephapnet_best.npz')                  
+        mec.append(mec_r)  
 
     print('MEC scores for DeepHapNet: ', mec)
     print('Best MEC: %d' % mec[np.argmin(mec)])
