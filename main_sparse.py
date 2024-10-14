@@ -1,33 +1,17 @@
 import argparse
 from multiprocessing import Pool
 import numpy as np
-from numpy import random as rn
-from scipy.spatial.distance import pdist, squareform
-from os import path
-from copy import deepcopy
-from tqdm import tqdm
 import time
 import random
-
-import logging
-from typing import Any, List, Tuple, Optional
-from nptyping import NDArray
-import torch.optim.lr_scheduler as lr_scheduler
 import os
 import torch
 from torch import nn
 from torch import optim
 from torch.utils.data import Dataset, DataLoader
-from torch.nn import functional as F
-from matplotlib import pyplot as plt
 
 from main_real import RetNet_loss, caculate_parameters,assignment,optimise
 from embeddings import AE_train
-
 from utils import * 
-from retnet.retention import MultiScaleRetention
-from retnet.util import ComplexFFN, ComplexGroupNorm, ComplexLayerNorm
-from spectralnet._cluster import SpectralNet
 from retnet.retnet import RetNet
 
 
@@ -63,8 +47,6 @@ def train_deephapnet(SNVdata: SparseSNVMatrixDataset,
         device = torch.device("cpu")
     print('DEVICE: ', device)    
 
-
-        
     # load data
     SNV_matrix = SNVdata.SNV_matrix.todense()
     print('SNP matrix: ', SNV_matrix.shape)
@@ -81,11 +63,7 @@ def train_deephapnet(SNVdata: SparseSNVMatrixDataset,
 
     total_params = (sum(p.numel() for p in embedAE.parameters()) + sum(p.numel() for p in retnet.parameters()))
     print('Total number of params: ', total_params)
-
-
     retnet_optimizer = optim.AdamW(list(retnet.parameters()) + list(embedAE.parameters()),lr=learning_rate)
-    #scheduler = lr_scheduler.CosineAnnealingLR(retnet_optimizer, T_max=num_epoch, eta_min=1e-6)
-
 
     mec = []
     mec_min = np.inf
@@ -120,7 +98,6 @@ def train_deephapnet(SNVdata: SparseSNVMatrixDataset,
             retnet_optimizer.step()
             retnet_train_loss += retnet_loss.item()
         retnet_train_loss = retnet_train_loss / len(dataloader)
-        #scheduler.step()         
 
         hap_origin = assignment(SNVdata, embedAE, retnet, num_hap=num_hap,device=device)  
         hap_matrix = SNVtoHap(SNV_matrix, hap_origin.cpu().detach().numpy().astype(int), num_hap)
@@ -181,10 +158,10 @@ def parser():
 
 if __name__ == '__main__':
     args = parser()
-    if args.set_seed:
-	setting_seed()
-
-    chunk_size = 250 
+    if args.set_seed:  
+        setting_seed()  
+      
+    chunk_size = 250  
     overlap_frac = 0.2 
 
     gt_file = 'data/NA12878/' + args.filehead + '/' +  args.filehead+ '_true_haplotypes.txt'
