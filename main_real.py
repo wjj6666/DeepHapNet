@@ -265,12 +265,12 @@ def parser():
 
 if __name__ == '__main__':
     args = parser()
-    if args.set_seed:
-        setting_seed()
     fhead = args.filehead
     mec = []
     best_mec = float('inf')
     for r in range(args.algo_runs):
+	if args.set_seed:
+	    setting_seed()
         print('RUN %d for %s' % (r+1, fhead))
         mec_r = train_deephapnet(fhead, num_epoch=2000, gpu=args.gpu, num_hap=args.ploidy)
         if mec_r < best_mec:
