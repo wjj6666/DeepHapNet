@@ -1,6 +1,7 @@
 import argparse
 import os
 import shutil
+import random
 import numpy as np
 from tqdm import tqdm
 
@@ -16,6 +17,15 @@ from embeddings import ReadAE, AE_train
 from spectralnet._cluster import SpectralNet
 from retnet.retnet import RetNet
 
+def setting_seed(seed=1029):
+	random.seed(seed)
+	os.environ['PYTHONHASHSEED'] = str(seed) 
+	np.random.seed(seed)
+	torch.manual_seed(seed)
+	torch.cuda.manual_seed(seed)
+	torch.cuda.manual_seed_all(seed) # if you are using multi-GPU.
+	torch.backends.cudnn.benchmark = False
+	torch.backends.cudnn.deterministic = True
 
 def optimise(SNV_matrix, hap_origin, num_hap):
     initial_temp = 0.5 
@@ -248,12 +258,15 @@ def parser():
     parser.add_argument("-p", "--ploidy", help="Ploidy of organism", default=2, type=int)
     parser.add_argument("-a", "--algo_runs", help="Number of experimental runs per dataset", default=1, type=int)
     parser.add_argument("-g", "--gpu", help='GPU to run DeepHapNet', default=-1, type=int)
+    parser.add_argument("--set_seed", help="True for set seed",action='store_true', default=False)
     args = parser.parse_args()
     print(args)
     return args
 
 if __name__ == '__main__':
     args = parser()
+    if args.set_seed:
+        setting_seed()
     fhead = args.filehead
     mec = []
     best_mec = float('inf')
