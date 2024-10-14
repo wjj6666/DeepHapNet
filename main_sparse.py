@@ -7,6 +7,7 @@ from os import path
 from copy import deepcopy
 from tqdm import tqdm
 import time
+import random
 
 import logging
 from typing import Any, List, Tuple, Optional
@@ -28,6 +29,17 @@ from retnet.retention import MultiScaleRetention
 from retnet.util import ComplexFFN, ComplexGroupNorm, ComplexLayerNorm
 from spectralnet._cluster import SpectralNet
 from retnet.retnet import RetNet
+
+
+def setting_seed(seed=1029):
+	random.seed(seed)
+	os.environ['PYTHONHASHSEED'] = str(seed) 
+	np.random.seed(seed)
+	torch.manual_seed(seed)
+	torch.cuda.manual_seed(seed)
+	torch.cuda.manual_seed_all(seed) # if you are using multi-GPU.
+	torch.backends.cudnn.benchmark = False
+	torch.backends.cudnn.deterministic = True
 
 
 def train_deephapnet(SNVdata: SparseSNVMatrixDataset, 
@@ -162,12 +174,16 @@ def parser():
     parser.add_argument("-p", "--ploidy", help="Ploidy of organism",default=2, type=int)
     parser.add_argument("-a", "--algo_runs", help="Number of experimental runs per dataset",default=1, type=int)
     parser.add_argument("-g", "--gpu", help='Number of GPUs to run DeepHapNet',default=0, type=int)
+    parser.add_argument("--set_seed", help="True for set seed",action='store_true', default=False)
     args = parser.parse_args()
     print(args)
     return args
 
 if __name__ == '__main__':
     args = parser()
+    if args.set_seed:
+	setting_seed()
+
     chunk_size = 250 
     overlap_frac = 0.2 
 
