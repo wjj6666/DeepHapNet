@@ -101,7 +101,7 @@ class SiameseTrainer:
                 break
             # t.set_description("Train Loss: {:.7f}, Valid Loss: {:.7f}, LR: {:.6f}".format(train_loss, valid_loss, current_lr))
             # t.refresh()
-            
+        os.makedirs(os.path.dirname(self.weights_path), exist_ok=True)
         torch.save(self.siamese_net.state_dict(), self.weights_path)
         return self.siamese_net
 
