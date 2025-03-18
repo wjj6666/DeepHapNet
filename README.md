@@ -1,7 +1,7 @@
 # DeepHapNet: 
 
 ## About
-DeepHapNet is a comprehensive framework for learning similarities between reads based on Retentive Network (RETNET), which is the infrastructure for a large-scale language model, and then clustering reads through a deep clustering architecture, eventually accomplishing the task of assembling diploid or polyploid haplotypes.
+DeepHapNet is a comprehensive framework for learning similarities between reads based on Retentive Network (RETNET), and then clustering reads through a deep clustering architecture, eventually accomplishing the task of assembling diploid or polyploid haplotypes.
 
 The current implementation of DeepHapNet uses Python3, PyTorch. 
 
