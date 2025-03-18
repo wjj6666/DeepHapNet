@@ -18,7 +18,7 @@ The `data` folder stores the data for all experiments, and all DeepHapNet script
 
 
 ## Input
-The input to the DeepHapNet model is the `SNV_matrix.txt` file, which needs to be obtained by processing before running the pipeline, the exact script can be found in the `data` folder.
+The input to the DeepHapNet model is the `SNV_matrix.txt` file, which needs to be obtained by processing before running the pipeline.
 
 ## Output
 The best results eventually obtained by the DeepHapNet pipeline are stored in the following files:  
